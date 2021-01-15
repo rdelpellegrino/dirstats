@@ -14,8 +14,7 @@
 #define _DIRNAME_LEN 256
 
 void dirstats(char dirpath[]);
-void getExt(char filename[], char ext[]);
-void stat_ex(char *path[]);
+void stat_ex(char path[]);
 
 int main(int argc, char *argv[])
 {
@@ -34,8 +33,8 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void dirstats(char *dirpath[])
-{
+void dirstats(char dirpath[])
+{    
     struct dirent *file;
     DIR *ddir;
     ddir = opendir(dirpath);
@@ -48,57 +47,16 @@ void dirstats(char *dirpath[])
     /* read the directory */
     while( (file=readdir(ddir)) != NULL )
     {
-        stat_ex(file->d_name);   
-        /*
-        struct stat fs;                
-        char ext[_EXT_LEN];
-        stat(file->d_name, &fs);
-
-        switch (fs.st_mode & __S_IFMT)
-        {
-            case __S_IFBLK: printf("%17s\t", "block device"); break;
-            case __S_IFCHR: printf("%17s\t", "character device"); break;
-            case __S_IFDIR:
-                printf("%17s\t%s\n","directory", file->d_name);
-                break;                     
-            case __S_IFIFO: printf("%17s\t", "FIFO/pipe"); break;
-            case __S_IFLNK: printf("%17s\t","symlink"); break;
-            case __S_IFREG:
-                getExt(file->d_name, ext);
-                printf("%17s\t%15s\t%10lld\t%10ld\t%10ld\t%s\n",
-                    "regular file",                     
-                    ext,
-                    (long long) fs.st_size, 
-                    fs.st_blocks, 
-                    fs.st_blksize,
-                    file->d_name);
-                break;
-            case __S_IFSOCK:    printf("socket\t");                  break;
-            default:            printf("unknown?\t");                break;
-        }
-        */
+        char fullpath[256];
+        strcpy(fullpath, dirpath);
+        strcat(fullpath, "/");
+        strcat(fullpath, file->d_name);
+        stat_ex(fullpath);        
     }
     
 }
 
-void getExt(char filename[], char ext[])
-{
-    // find the dot looking from end
-    char *ptr =  strrchr( filename, '.');
-    // now get chars from ptr
-    int i = 0;
-    while(*ptr++ |= '\0')
-    {
-        if(strlen(ext) > _EXT_LEN)
-        {
-            printf("Exceeds maximum extension length (%d)", _EXT_LEN);
-            break;
-        }
-        ext[i++] = *ptr;  
-    }
-}
-
-void stat_ex(char *path[])
+void stat_ex(char path[])
 {
         struct stat sb;
 
