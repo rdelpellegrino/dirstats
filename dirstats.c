@@ -1,17 +1,13 @@
 #include <stdio.h>
 #include <dirent.h>
-#include <limits.h>
-#include <string.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <time.h>
+#include <string.h>
 #include <stdlib.h>
 #include <sys/sysmacros.h>
+#include <time.h>
 
-#define _MAX_PATHS 256
-#define _EXT_LEN 265
-#define _FILENAME_LEN 256
-#define _DIRNAME_LEN 256
+//#include <limits.h>
+//#include <sys/types.h>
 
 void dirstats(char dirpath[]);
 void stat_ex(char path[]);
@@ -28,6 +24,7 @@ int main(int argc, char *argv[])
             //strcpy(dirpath, argv[x]);
             printf("Argument %d is %s\n",x,argv[x] );
             dirstats(argv[x]);
+            puts("===");
         }
     }
     return 0;
@@ -40,8 +37,12 @@ void dirstats(char dirpath[])
     ddir = opendir(dirpath);
     if(ddir == NULL)
     {
-        printf("Unable to open directory %s", dirpath);
-        return;                
+        struct stat ds;
+        if (lstat(dirpath, &ds) == -1) 
+            printf("lstat - invalid path: %s", dirpath);
+        else
+            printf("lstat - not a directory?: %s", dirpath);        
+        exit(EXIT_FAILURE); // return? if we want to continue?                      
     }
 
     /* read the directory */
@@ -51,16 +52,20 @@ void dirstats(char dirpath[])
         strcpy(fullpath, dirpath);
         strcat(fullpath, "/");
         strcat(fullpath, file->d_name);
-        stat_ex(fullpath);        
-    }
-    
+        stat_ex(fullpath);
+        puts("\n");          
+    }    
 }
 
 void stat_ex(char path[])
 {
         struct stat sb;
-
-        if (lstat(path, &sb) == -1)
+        /*
+        lstat()  is  identical to stat(), except that if pathname is a symbolic link,
+        then it returns information about the link  itself,  not  the  file  that  it
+        refers to.
+        */
+        if (lstat(path, &sb) == -1) 
         {
             perror("lstat");
             exit(EXIT_FAILURE);
@@ -96,5 +101,5 @@ void stat_ex(char path[])
                 (long long) sb.st_blocks);
         printf("Last status change:       %s", ctime(&sb.st_ctime));
         printf("Last file access:         %s", ctime(&sb.st_atime));
-        printf("Last file modification:   %s", ctime(&sb.st_mtime));        
+        printf("Last file modification:   %s", ctime(&sb.st_mtime));             
 }
